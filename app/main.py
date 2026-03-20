@@ -8,7 +8,6 @@ from app.services.import_runner import run_import
 DEFAULT_INPUT_DIR = "tests/fixtures"
 DEFAULT_DB_PATH = "data/db/stock_data.sqlite3"
 DEFAULT_SCHEMA_PATH = "app/db/schema.sql"
-DEFAULT_IMPORT_BATCH_ID = "phase1-run"
 
 
 def main() -> None:
@@ -20,7 +19,6 @@ def main() -> None:
         input_dir=input_dir,
         db_path=DEFAULT_DB_PATH,
         schema_path=DEFAULT_SCHEMA_PATH,
-        import_batch_id=DEFAULT_IMPORT_BATCH_ID,
     )
 
 

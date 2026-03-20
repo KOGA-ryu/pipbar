@@ -50,6 +50,26 @@ Pipelines enforce separation of concerns and make failures visible.
 
 ---
 
+### Decision: Contract lock before code, proof before closure
+
+**Why:**
+Most workflow drift in this project came from starting a slice before the contract was fully locked, or from claiming behavior before the verification matched the claim.
+
+**Choice:**
+
+* every slice locks data shape first
+* every slice locks return shape first
+* every slice states its verification target before implementation
+* no slice is called done until the proof demonstrates the exact claimed behavior
+
+**Impact:**
+
+* less contract churn
+* fewer downstream rewires
+* less fake confidence from incomplete verification
+
+---
+
 ## Data Design Decisions
 
 ### Decision: Canonical schema first
@@ -210,19 +230,15 @@ Single-error reporting hides full failure context.
 
 ## Duplicate Handling Decisions
 
-### Decision: Upsert-based duplicate policy
+### Decision: Phase 2 duplicate load policy
 
-**Behavior:**
+**Policy:**
 
-* new → insert
-* same → no-op
-* changed → update
-
-**Why:**
-
-* supports reruns
-* supports corrected data
-* prevents duplication
+* duplicate identity is `(ticker, timeframe, ts)`
+* duplicates are not invalid data-quality failures
+* duplicates do not overwrite existing `price_bars`
+* duplicates are counted and skipped during load
+* duplicate counts must appear in the run summary
 
 ---
 
@@ -255,6 +271,28 @@ Use SQL `UNIQUE` constraint.
 
 ## Run Model Decisions
 
+### Decision: Phase 2 import run tracking
+
+**Policy:**
+
+* each pipeline execution has one `import_batch_id`
+* each execution produces one `import_runs` row
+* `import_runs` stores run metadata and final counts
+* `import_runs` is for operational and audit visibility, not raw data storage
+* `import_runs` tracks at minimum:
+  * `import_batch_id`
+  * `started_at`
+  * `completed_at`
+  * `status`
+  * `files_discovered`
+  * `rows_parsed`
+  * `rows_valid`
+  * `rows_invalid`
+  * `rows_inserted`
+  * `rows_duplicates_skipped`
+
+---
+
 ### Decision: One batch per run
 
 **Why:**
@@ -284,15 +322,16 @@ Pipelines must be safe to rerun.
 
 ---
 
-### Decision: File failures are isolated
+### Decision: System-level file failures fail the run
 
 **Why:**
-One bad file should not block all progress.
+System failures must remain visible and stop the run.
 
 **Choice:**
 
-* continue processing other files
-* mark run as partial success
+* row-level bad data becomes rejected rows
+* system-level file failures mark the run failed
+* no partial-success state in the current policy
 
 ---
 
@@ -367,6 +406,26 @@ Proves system works end-to-end.
 
 * faster feedback
 * less overengineering
+
+---
+
+### Decision: Minimal failed-run metadata
+
+**Choice:**
+
+* failed runs store a short `failure_reason`
+* failed runs may store `stage_failed` when it is available cleanly
+* failed-run metadata is for operational visibility, not traceback archival
+
+**Current scope:**
+
+* `failure_reason`
+* `stage_failed`
+
+**Impact:**
+
+* failed runs are easier to inspect
+* error reporting stays lean and SQLite-friendly
 
 ---
 
@@ -478,5 +537,3 @@ This file will save you from:
 * overengineering
 * regression bugs
 * forgetting why things were strict
-
-

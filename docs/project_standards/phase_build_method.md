@@ -40,6 +40,20 @@ Verify after each step or each tightly related pair of steps.
 - inspect real intermediate artifacts
 - prefer one real check over a theoretical argument
 
+## Slice Gate
+
+No implementation slice starts until three things are locked:
+
+- data shape
+- function return shape
+- verification statement
+
+No implementation slice is complete until the verification proves the exact claim being made.
+
+- if the claim is duplicate handling, prove a duplicate case
+- if the claim is rerun safety, prove a rerun
+- if the claim is rejection behavior, prove a rejected row
+
 ## Anti-Drift Rule
 
 Do not add work from later phases during the current phase.

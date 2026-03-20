@@ -7,6 +7,7 @@ def build_run_summary(
     rows_valid: int,
     rows_invalid: int,
     rows_inserted: int,
+    rows_duplicates_skipped: int,
 ) -> dict[str, int]:
     return {
         "files_discovered": files_discovered,
@@ -14,6 +15,7 @@ def build_run_summary(
         "rows_valid": rows_valid,
         "rows_invalid": rows_invalid,
         "rows_inserted": rows_inserted,
+        "rows_duplicates_skipped": rows_duplicates_skipped,
     }
 
 

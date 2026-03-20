@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from app.models.candidate_row import CandidateRow
 from app.models.price_bar import PriceBar
 
 
 def validate_records(
-    records: list[PriceBar],
+    records: list[CandidateRow],
 ) -> tuple[list[PriceBar], list[dict[str, object]]]:
     # Future optimization note:
     # if profiling shows record-by-record validation is hot on very large imports,
@@ -13,12 +14,28 @@ def validate_records(
     valid_records: list[PriceBar] = []
     invalid_records: list[dict[str, object]] = []
 
-    for record in records:
-        issues = _validate_record(record)
+    for candidate in records:
+        if candidate.record is None:
+            invalid_records.append(
+                {
+                    "raw_row": candidate.raw_row,
+                    "record": None,
+                    "issues": candidate.issues,
+                }
+            )
+            continue
+
+        issues = _validate_record(candidate.record)
         if issues:
-            invalid_records.append({"record": record, "issues": issues})
+            invalid_records.append(
+                {
+                    "raw_row": candidate.raw_row,
+                    "record": candidate.record,
+                    "issues": issues,
+                }
+            )
         else:
-            valid_records.append(record)
+            valid_records.append(candidate.record)
 
     return valid_records, invalid_records
 

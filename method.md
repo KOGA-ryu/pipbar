@@ -12,6 +12,21 @@ The method is simple:
 - build in dependency order
 - verify with real checks as you go
 
+## Operating Law
+
+Every feature slice must satisfy two gates before it moves on:
+
+- contract lock before implementation
+- claim-matched proof before completion
+
+Contract lock means the slice starts with:
+
+- the data shape
+- the function return shape
+- the verification statement
+
+Claim-matched proof means the verification must demonstrate the exact behavior being claimed. If the claim is rerun safety, the proof must show a real rerun. If the claim is duplicate handling, the proof must show real duplicates.
+
 This keeps the repo understandable while requirements are still moving.
 
 ## Reusable Parts

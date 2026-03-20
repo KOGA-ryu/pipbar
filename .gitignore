@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
+.DS_Store
 data/db/*.sqlite3
 .env
 2025-11-05.csv.gz
